@@ -4,7 +4,9 @@ To be finished.
 Import stuff: use tanh as activation function to have negative responese
 
 # How to Run
-``` python model.py ```
+``` 
+python model.py
+```
 
 # Sample Result
 ```
