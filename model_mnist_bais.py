@@ -71,7 +71,7 @@ class HebbLearner():
 
             miss_list = tf.not_equal(tf.cast(prediction,tf.float64),tf.cast(labels,tf.float64))
             correct_list = tf.equal(tf.cast(prediction,tf.float64),tf.cast(labels,tf.float64))
-            dop_bool = tf.expand_dims(tf.cast(correct_list,tf.float32),axis=1)
+            dop_mask = tf.expand_dims(tf.cast(correct_list,tf.float32),axis=1)
             miss_rate = tf.reduce_sum(tf.cast(miss_list,tf.float32))/(self.batch_size)
 
         with tf.variable_scope('opt'):
