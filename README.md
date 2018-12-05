@@ -4,7 +4,7 @@ To be finished.
 Import stuff: use tanh as activation function to have negative responese
 
 # How to Run
-``` 
+```
 python model.py
 ```
 
@@ -17,3 +17,7 @@ Tranning Error at Epochs3:0.021250000223517418
 Tranning Error at Epochs4:0.021250000223517418
 Test Error Rate:0.004999999888241291
 ```
+
+
+Possible to use discrete gradient but need to include [-1,0,1] (activation real)
+Binary activation can work but not as good
