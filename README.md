@@ -1,7 +1,8 @@
 # compNbrain
-To be finished.
+Binary classification for breast cancer detection using only local hebbian rule
 
 Import stuff: use tanh as activation function to have negative responese
+
 Import stuff: adaptive threshold
 
 # How to Run
