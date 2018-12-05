@@ -76,7 +76,7 @@ class HebbLearner():
 
         with tf.variable_scope('opt'):
             update_ops = []
-            update_ops.extend([W_4.assign(W_4+self.lr*self.update_rule(y_3,tf.cast(2*labels-1,tf.float32)))])
+            update_ops.extend([W_4.assign(W_4+self.lr*self.update_rule(y_3,tf.cast(2*one_hot_labels-1,tf.float32)))])
             update_ops.extend([W_3.assign(W_3+self.lr*self.update_rule(y_2,y_3,dop_mask))])
             update_ops.extend([W_2.assign(W_2+self.lr*self.update_rule(y_1,y_2,dop_mask))])
             update_ops.extend([W_1.assign(W_1+self.lr*self.update_rule(sequences,y_1,dop_mask))])
