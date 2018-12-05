@@ -2,22 +2,26 @@
 To be finished.
 
 Import stuff: use tanh as activation function to have negative responese
+Import stuff: adaptive threshold
 
 # How to Run
 ```
-python model.py
+python model_cancer.py
 ```
 
 # Sample Result
 ```
-Tranning Error at Epochs0:0.9424999952316284
-Tranning Error at Epochs1:0.019999999552965164
-Tranning Error at Epochs2:0.021250000223517418
-Tranning Error at Epochs3:0.021250000223517418
-Tranning Error at Epochs4:0.021250000223517418
-Test Error Rate:0.004999999888241291
+Tranning Error at Epochs 0:0.4375
+Tranning Error at Epochs 1:0.11500000208616257
+Tranning Error at Epochs 2:0.10499999672174454
+Tranning Error at Epochs 3:0.0949999988079071
+Tranning Error at Epochs 4:0.0949999988079071
+Tranning Error at Epochs 5:0.09000000357627869
+Tranning Error at Epochs 6:0.09000000357627869
+Tranning Error at Epochs 7:0.0925000011920929
+Tranning Error at Epochs 8:0.08749999850988388
+Tranning Error at Epochs 9:0.08749999850988388
+Tranning Error at Epochs 10:0.08749999850988388
+...
+Test Error Rate:0.11999999731779099
 ```
-
-
-Possible to use discrete gradient but need to include [-1,0,1] (activation real)
-Binary activation can work but not as good
