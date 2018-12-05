@@ -17,7 +17,7 @@ class HebbLearner():
     def __init__(self,config):
         self.num_sequence = 1000
         self.config = config
-        self.batch_size = 100
+        self.batch_size = 1000
         self.lr = 0.01
         self.alpha = 0.2
         self.model = self.model()
@@ -73,7 +73,7 @@ class HebbLearner():
 
             miss_rate = tf.reduce_sum(tf.count_nonzero(tf.reduce_sum(miss_per_digit,axis=1)))/(self.batch_size)
             avg_miss = tf.reduce_sum(tf.reduce_sum(miss_per_digit,axis=1))/(self.batch_size)
-            dop_mask = tf.reduce_sum(tf.nn.relu(tf.cast(tf.equal(y_4,tf.cast(labels,tf.float32)),tf.float32)-2),axis=1,keepdims=True)
+            dop_mask = tf.nn.relu(tf.reduce_sum(tf.cast(tf.equal(y_4,tf.cast(labels,tf.float32)),tf.float32),axis=1,keepdims=True)-2)
 
             # correct_list = tf.equal(tf.cast(prediction,tf.float64),tf.cast(labels,tf.float64))
             # dop_bool = tf.expand_dims(tf.cast(correct_list,tf.float32),axis=1)
