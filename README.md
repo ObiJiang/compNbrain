@@ -2,6 +2,7 @@
 Binary classification for breast cancer detection using only local hebbian rule
 
 Import stuff: use tanh as activation function to have negative responese
+
 Import stuff: adaptive bias term
 
 # How to Run
