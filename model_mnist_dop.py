@@ -73,7 +73,7 @@ class HebbLearner():
 
             miss_rate = tf.reduce_sum(tf.count_nonzero(tf.reduce_sum(miss_per_digit,axis=1)))/(self.batch_size)
             avg_miss = tf.reduce_sum(tf.reduce_sum(miss_per_digit,axis=1))/(self.batch_size)
-            dop_mask = tf.sign(tf.nn.relu(tf.reduce_sum(tf.cast(tf.equal(y_4,tf.cast(labels,tf.float32)),tf.float32),axis=1,keepdims=True)-2))
+            dop_mask = tf.sign(tf.nn.relu(tf.reduce_sum(tf.cast(tf.equal(y_4,tf.cast(labels,tf.float32)),tf.float32),axis=1,keepdims=True)-3))
 
             # correct_list = tf.equal(tf.cast(prediction,tf.float64),tf.cast(labels,tf.float64))
             # dop_bool = tf.expand_dims(tf.cast(correct_list,tf.float32),axis=1)
@@ -98,9 +98,9 @@ class HebbLearner():
         if dop_mask == None:
             return tf.matmul(tf.transpose(x),(y))
         else:
-            # return tf.matmul(tf.transpose(x),dop_mask*(y))
-            temp = tf.einsum('bi,bj->bij', x, y)*(2*tf.expand_dims(dop_mask,axis=2)-1)
-            return tf.reduce_sum(temp,axis=0)
+            return tf.matmul(tf.transpose(x),dop_mask*(y))
+            # temp = tf.einsum('bi,bj->bij', x, y)*(2*tf.expand_dims(dop_mask,axis=2)-1)
+            # return tf.reduce_sum(temp,axis=0)
 
     def train(self,sess,data,labels):
         model = self.model

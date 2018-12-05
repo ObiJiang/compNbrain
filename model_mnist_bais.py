@@ -76,10 +76,10 @@ class HebbLearner():
 
         with tf.variable_scope('opt'):
             update_ops = []
-            update_ops.extend([W_4.assign(W_4+self.lr*tf.matmul(tf.transpose(y_3),tf.cast(2*one_hot_labels-1,tf.float32)))])
-            update_ops.extend([W_3.assign(W_3+self.lr*tf.matmul(tf.transpose(y_2),dop_bool*y_3))])
-            update_ops.extend([W_2.assign(W_2+self.lr*tf.matmul(tf.transpose(y_1),dop_bool*y_2))])
-            update_ops.extend([W_1.assign(W_1+self.lr*tf.matmul(tf.transpose(sequences),dop_bool*y_1))])
+            update_ops.extend([W_4.assign(W_4+self.lr*self.update_rule(y_3,tf.cast(2*labels-1,tf.float32)))])
+            update_ops.extend([W_3.assign(W_3+self.lr*self.update_rule(y_2,y_3,dop_mask))])
+            update_ops.extend([W_2.assign(W_2+self.lr*self.update_rule(y_1,y_2,dop_mask))])
+            update_ops.extend([W_1.assign(W_1+self.lr*self.update_rule(sequences,y_1,dop_mask))])
             update_ops.extend([b_3.assign(self.alpha*b_3+(1-self.alpha)*tf.reduce_mean(pre_y_3,axis=0))])
             update_ops.extend([b_2.assign(self.alpha*b_2+(1-self.alpha)*tf.reduce_mean(pre_y_2,axis=0))])
             update_ops.extend([b_1.assign(self.alpha*b_1+(1-self.alpha)*tf.reduce_mean(pre_y_1,axis=0))])
@@ -88,6 +88,14 @@ class HebbLearner():
                 backwards_op = tf.tuple(update_ops)
 
         return AttrDict(locals())
+
+    def update_rule(self,x,y,dop_mask=None):
+        if dop_mask == None:
+            return tf.matmul(tf.transpose(x),(y))
+        else:
+            # return tf.matmul(tf.transpose(x),dop_mask*(y))
+            temp = tf.einsum('bi,bj->bij', x, y)*(2*tf.expand_dims(dop_mask,axis=2)-1)
+            return tf.reduce_sum(temp,axis=0)
 
     def train(self,sess,data,labels):
         model = self.model
