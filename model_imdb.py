@@ -4,6 +4,8 @@ from tqdm import tqdm
 import argparse
 import matplotlib.pyplot as plt
 mnist = tf.keras.datasets.mnist
+imdb = tf.keras.datasets.imdb
+
 
 class AttrDict(dict):
     __getattr__ = dict.__getitem__
@@ -12,7 +14,7 @@ class AttrDict(dict):
 
 class HebbLearner():
     def __init__(self,config):
-        self.num_sequence = 1000
+        self.num_sequence = 25000
         self.config = config
         self.batch_size = 10
         self.lr = 0.01
@@ -24,30 +26,32 @@ class HebbLearner():
 
         return weights
 
-    def model(self, bio_model='bdm'):
-        sequences = tf.placeholder(tf.float32, [None, 28,28])
-        labels = tf.placeholder(tf.int32, [None,4])
 
-        sequences_flat = tf.reshape(sequences,[-1,28*28])
+    def model(self, bio_model='hebb'):
+        sequences = tf.placeholder(tf.float32, [None, 16 * 16])
+        sequences_flat = sequences
+        labels = tf.placeholder(tf.int32, [None,1])
+
+        # sequences_flat = tf.reshape(sequences,[-1,28*28])
 
         """ forward pass """
         # simple archecture 2->32->32->2
         # activation: relu
         # first layer
         with tf.variable_scope('fw'):
-            W_1 = self._weightVar([28*28,128],name='W1')
+            W_1 = self._weightVar([16*16,64],name='W1')
             y_1 = tf.nn.tanh(tf.matmul(sequences_flat,W_1))
 
             # second layer
-            W_2 = self._weightVar([128,64],name='W2')
-            y_2= tf.nn.tanh(tf.matmul(y_1,W_2))
+            # W_2 = self._weightVar([128,64],name='W2')
+            # y_2= tf.nn.tanh(tf.matmul(y_1,W_2))
 
             # third layer
-            W_3 = self._weightVar([64,32],name='W3')
-            y_3= tf.nn.tanh(tf.matmul(y_2,W_3))
+            W_3 = self._weightVar([64,16],name='W3')
+            y_3= tf.nn.tanh(tf.matmul(y_,W_3))
 
             # third layer
-            W_4 = self._weightVar([32,4],name='W4')
+            W_4 = self._weightVar([16,1],name='W4')
             y_4 = tf.sign(tf.nn.relu(tf.matmul(y_3,W_4)))
 
             miss_list = tf.not_equal(tf.cast(y_4,tf.float64),tf.cast(labels,tf.float64))
@@ -57,7 +61,15 @@ class HebbLearner():
         update_ops = []
 
         # Hebb with LTD
-        if bio_model == 'ltd':
+        if bio_model == 'hebb':
+            update_ops.extend([W_4.assign(W_4+self.lr*tf.matmul(tf.transpose(y_3),tf.cast(2*labels-1,tf.float32)))])
+            update_ops.extend([W_3.assign(W_3+self.lr*tf.matmul(tf.transpose(y_1),y_3))])
+            # update_ops.extend([W_2.assign(W_2+self.lr*tf.matmul(tf.transpose(y_1),y_2))])
+            update_ops.extend([W_1.assign(W_1+self.lr*tf.matmul(tf.transpose(sequences_flat),y_1))])
+            with tf.control_dependencies([y_4]):
+                backwards_op = tf.tuple(update_ops)
+
+        elif bio_model == 'ltd':
             theta = 1e-4
             with tf.variable_scope('bw'):
                 #[W_3.assign(W_3+self.lr*tf.matmul(tf.transpose(y_2),tf.cast(tf.expand_dims(labels,1),tf.float32)))])
@@ -116,13 +128,37 @@ if __name__ == '__main__':
     hebbLearner = HebbLearner(config)
 
     # divide data into test and training
-    (train_data, train_label), (test_data, test_label) = mnist.load_data()
+    (train_data, train_label), (test_data, test_label) = imdb.load_data(num_words=10000)
     # train_data, test_data = ((train_data -128)/ 255.0).astype(np.float32), ((test_data -128)/ 255.0).astype(np.float32)
 
-    train_label_unpack = np.unpackbits(np.expand_dims(train_label,axis=1), axis=1)[:,-4:]
-    test_label_unpack = np.unpackbits(np.expand_dims(test_label,axis=1), axis=1)[:,-4:]
+    # A dictionary mapping words to an integer index
+    word_index = imdb.get_word_index()
 
+    # The first indices are reserved
+    word_index = {k:(v+3) for k,v in word_index.items()}
+    word_index["<PAD>"] = 0
+    word_index["<START>"] = 1
+    word_index["<UNK>"] = 2  # unknown
+    word_index["<UNUSED>"] = 3
+
+    reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
+
+    def decode_review(text):
+        return ' '.join([reverse_word_index.get(i, '?') for i in text])
+
+    train_data = tf.keras.preprocessing.sequence.pad_sequences(train_data,    
+                                                            value=word_index["<PAD>"],
+                                                            padding='post',
+                                                            maxlen=256)
+
+    test_data = tf.keras.preprocessing.sequence.pad_sequences(test_data,
+                                                            value=word_index["<PAD>"],
+                                                            padding='post',
+                                                            maxlen=256)
+
+    train_label = np.expand_dims(train_label, axis=1)
+    test_label = np.expand_dims(test_label, axis=1)
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        hebbLearner.train(sess,train_data,train_label_unpack)
-        hebbLearner.test(sess,test_data,test_label_unpack)
+        hebbLearner.train(sess,train_data,train_label)
+        hebbLearner.test(sess,test_data,test_label)

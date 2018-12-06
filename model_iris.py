@@ -4,6 +4,9 @@ from tqdm import tqdm
 import argparse
 import matplotlib.pyplot as plt
 mnist = tf.keras.datasets.mnist
+boston_housing = tf.keras.datasets.boston_housing
+fashion_mnist = tf.keras.datasets.fashion_mnist
+imdb = tf.keras.datasets.imdb
 
 class AttrDict(dict):
     __getattr__ = dict.__getitem__
@@ -24,7 +27,7 @@ class HebbLearner():
 
         return weights
 
-    def model(self, bio_model='bdm'):
+    def model(self, bio_model='ltd'):
         sequences = tf.placeholder(tf.float32, [None, 28,28])
         labels = tf.placeholder(tf.int32, [None,4])
 
@@ -39,15 +42,15 @@ class HebbLearner():
             y_1 = tf.nn.tanh(tf.matmul(sequences_flat,W_1))
 
             # second layer
-            W_2 = self._weightVar([128,64],name='W2')
+            W_2 = self._weightVar([128,256],name='W2')
             y_2= tf.nn.tanh(tf.matmul(y_1,W_2))
 
             # third layer
-            W_3 = self._weightVar([64,32],name='W3')
+            W_3 = self._weightVar([256,128],name='W3')
             y_3= tf.nn.tanh(tf.matmul(y_2,W_3))
 
             # third layer
-            W_4 = self._weightVar([32,4],name='W4')
+            W_4 = self._weightVar([128,4],name='W4')
             y_4 = tf.sign(tf.nn.relu(tf.matmul(y_3,W_4)))
 
             miss_list = tf.not_equal(tf.cast(y_4,tf.float64),tf.cast(labels,tf.float64))
@@ -89,7 +92,6 @@ class HebbLearner():
             for bi in range(int(data.shape[0]/self.batch_size)):
                 batch_data = data[bi*self.batch_size:(bi+1)*self.batch_size,:]
                 batch_labels = labels[bi*self.batch_size:(bi+1)*self.batch_size]
-                # print(batch_labels.shape)
                 W,miss_rate = sess.run([model.backwards_op,model.miss_rate],feed_dict={model.sequences:batch_data,model.labels:batch_labels})
                 miss_rate_list.append(miss_rate)
 
@@ -116,8 +118,8 @@ if __name__ == '__main__':
     hebbLearner = HebbLearner(config)
 
     # divide data into test and training
-    (train_data, train_label), (test_data, test_label) = mnist.load_data()
-    # train_data, test_data = ((train_data -128)/ 255.0).astype(np.float32), ((test_data -128)/ 255.0).astype(np.float32)
+    (train_data, train_label), (test_data, test_label) = imdb.load_data()
+    train_data, test_data = ((np.array(train_data))).astype(np.int32), ((np.array(test_data))).astype(np.int32)
 
     train_label_unpack = np.unpackbits(np.expand_dims(train_label,axis=1), axis=1)[:,-4:]
     test_label_unpack = np.unpackbits(np.expand_dims(test_label,axis=1), axis=1)[:,-4:]

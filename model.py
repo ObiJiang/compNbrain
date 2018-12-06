@@ -72,11 +72,16 @@ class HebbLearner():
             miss_rate = tf.reduce_sum(tf.cast(miss_list,tf.float32))/(self.batch_size)
 
         update_ops = []
+        theta = 1e-3
         with tf.variable_scope('bw'):
             #[W_3.assign(W_3+self.lr*tf.matmul(tf.transpose(y_2),tf.cast(tf.expand_dims(labels,1),tf.float32)))])
-            update_ops.extend([W_3.assign(W_3+self.lr*tf.matmul(tf.transpose(y_2),tf.cast(2*tf.expand_dims(labels,1)-1,tf.float32)))])
-            update_ops.extend([W_2.assign(W_2+self.lr*tf.matmul(tf.transpose(y_1),y_2))])
-            update_ops.extend([W_1.assign(W_1+self.lr*tf.matmul(tf.transpose(sequences),y_1))])
+
+            update_ops.extend([W_3.assign(W_3+self.lr*tf.matmul(
+                tf.transpose(y_2),tf.cast(
+                    2*tf.expand_dims(labels,1)-1,tf.float32) - theta
+                    ))])
+            update_ops.extend([W_2.assign(W_2+self.lr*tf.matmul(tf.transpose(y_1),y_2 - theta))])
+            update_ops.extend([W_1.assign(W_1+self.lr*tf.matmul(tf.transpose(sequences),y_1 - theta))])
             with tf.control_dependencies([y_3]):
                 backwards_op = tf.tuple(update_ops)
 
